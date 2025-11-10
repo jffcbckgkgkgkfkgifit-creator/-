@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أداة رفع الصور والحصول على الرابط المباشر</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .container {
+      background: linear-gradient(135deg, #ff6b35, #ff3f1f, #ffd200);
+      border-radius: 15px;
+      padding: 30px;
+      margin: 20px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+      text-align: right;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
+      color: #fff;
+      text-shadow: 1px 1px 3px #000;
+    }
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #ff3f1f;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #ff6b35;
+    }
+    .result {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      word-wrap: break-word;
+    }
+    .preview {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .preview img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .copy-btn {
+      display: block;
+      margin: 10px auto 0 auto;
+      padding: 10px 15px;
+      background: #ffd200;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .copy-btn:hover {
+      background: #ffea00;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>أداة رفع الصور والحصول على الرابط المباشر</h1>
+  
+  <input type="file" id="imageInput" accept="image/*">
+  <button onclick="uploadImage()">رفع الصورة</button>
+  
+  <div class="result" id="result" style="display:none;"></div>
+  <div class="preview" id="preview" style="display:none;"></div>
+  <button class="copy-btn" id="copyBtn" style="display:none;" onclick="copyURL()">نسخ الرابط</button>
+</div>
+
+<script>
+  let lastURL = '';
+
+  async function uploadImage() {
+    const fileInput = document.getElementById('imageInput');
+    const resultDiv = document.getElementById('result');
+    const previewDiv = document.getElementById('preview');
+    const copyBtn = document.getElementById('copyBtn');
+
+    if (!fileInput.files[0]) {
+      alert('الرجاء اختيار صورة!');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', fileInput.files[0]);
+
+    // ضع هنا مفتاح API الخاص بك من ImgBB
+    const apiKey = 'f543fb9c1a9c8a49230f82fc378d19b2';
+
+    resultDiv.style.display = 'block';
+    resultDiv.textContent = 'جاري رفع الصورة...';
+    previewDiv.style.display = 'none';
+    copyBtn.style.display = 'none';
+
+    try {
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const imageUrl = data.data.display_url; // medium image URL
+        lastURL = imageUrl;
+
+        resultDiv.innerHTML = `<strong>تم رفع الصورة بنجاح!</strong><br>الرابط المباشر: <a href="${imageUrl}" target="_blank">${imageUrl}</a>`;
+        previewDiv.innerHTML = `<img src="${imageUrl}" alt="صورة مرفوعة">`;
+        previewDiv.style.display = 'block';
+        copyBtn.style.display = 'block';
+      } else {
+        resultDiv.textContent = 'حدث خطأ أثناء رفع الصورة.';
+      }
+    } catch (err) {
+      resultDiv.textContent = 'خطأ في الاتصال بالخادم: ' + err;
+    }
+  }
+
+  function copyURL() {
+    if (!lastURL) return;
+    navigator.clipboard.writeText(lastURL).then(() => {
+      alert('تم نسخ الرابط بنجاح!');
+    });
+  }
+</script>
+
+</body>
+</html>
